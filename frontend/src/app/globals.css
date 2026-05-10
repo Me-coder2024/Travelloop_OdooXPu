@@ -81,3 +81,8 @@ body {
 /* Hidden scrollbar for horizontal scroll */
 .scroll-hidden::-webkit-scrollbar { display: none; }
 .scroll-hidden { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Admin grid responsive */
+@media (max-width: 768px) {
+  .admin-grid { grid-template-columns: 1fr !important; }
+}
