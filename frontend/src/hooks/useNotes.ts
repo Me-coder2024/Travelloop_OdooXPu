@@ -1,4 +1,5 @@
 'use client';
+// Hook for trip notes CRUD with filtering
 import { useState, useCallback } from 'react';
 import api from '@/lib/api';
 
