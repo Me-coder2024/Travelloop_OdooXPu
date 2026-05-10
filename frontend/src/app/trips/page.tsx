@@ -26,22 +26,22 @@ export default function TripsPage() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">My Trips</h1><p className="text-sm text-[var(--color-text-secondary)]">Manage all your travel plans</p>
-        <Link href="/trip/new"><Button><Plus className="h-4 w-4 mr-1" />New Trip</Button></Link>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '24px 16px 40px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>My Trips</h1>
+          <p style={{ fontSize: '13px', color: '#64748B', marginTop: '2px' }}>Manage all your travel plans</p>
+        </div>
+        <Link href="/trip/new"><Button variant="primary"><Plus style={{ width: '16px', height: '16px', marginRight: '6px' }} />New Trip</Button></Link>
       </div>
 
-      <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
-        <Tabs.List className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit" aria-label="Trip status filter">
-          {['all', 'ongoing', 'upcoming', 'completed'].map(tab => (
-            <Tabs.Trigger key={tab} value={tab}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === tab ? 'bg-white text-[var(--color-text-primary)] shadow-sm' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'}`}>
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </Tabs.Trigger>
-          ))}
-        </Tabs.List>
-      </Tabs.Root>
+      <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', borderRadius: '8px', padding: '3px', marginBottom: '20px', overflowX: 'auto' }}>
+        {['all', 'ongoing', 'upcoming', 'completed'].map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
+            style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: activeTab === tab ? '#FFFFFF' : 'transparent', color: activeTab === tab ? '#0F172A' : '#475569' }}
+          >{tab.charAt(0).toUpperCase() + tab.slice(1)}</button>
+        ))}
+      </div>
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -50,19 +50,19 @@ export default function TripsPage() {
       ) : filtered.length === 0 ? (
         <EmptyState title="No trips found" description="Start planning your next adventure!" actionLabel="Create Trip" onAction={() => router.push('/trip/new')} />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '14px' }}>
           {filtered.map((trip: any, i: number) => (
-            <motion.div key={trip.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-              <Link href={`/trip/${trip.id}`} className="block bg-white rounded-xl border border-[var(--color-border)] hover:shadow-lg transition-all duration-300 overflow-hidden">
-                <div className="h-3 bg-gradient-to-r from-blue-500 to-indigo-500" />
-                <div className="p-5">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg">{trip.name}</h3>
+            <motion.div key={trip.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
+              <Link href={`/trip/${trip.id}`} style={{ display: 'block', background: '#FFFFFF', borderRadius: '10px', border: '1px solid #E2E8F0', overflow: 'hidden', textDecoration: 'none' }}>
+                <div style={{ height: '3px', background: '#1D4ED8' }} />
+                <div style={{ padding: '16px 18px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A' }}>{trip.name}</h3>
                     <TripStatusBadge status={trip.status} />
                   </div>
-                  <p className="text-sm text-[var(--color-text-secondary)] flex items-center gap-1 mb-2"><MapPin className="h-3.5 w-3.5" />{trip.place}</p>
-                  <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1"><Calendar className="h-3 w-3" />{new Date(trip.start_date).toLocaleDateString()} — {new Date(trip.end_date).toLocaleDateString()}</p>
-                  {trip.total_budget && <p className="text-xs text-[var(--color-text-muted)] mt-1">Budget: ${Number(trip.total_budget).toFixed(2)}</p>}
+                  <p style={{ fontSize: '13px', color: '#475569', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}><MapPin style={{ width: '14px', height: '14px' }} />{trip.place}</p>
+                  <p style={{ fontSize: '12px', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar style={{ width: '12px', height: '12px' }} />{new Date(trip.start_date).toLocaleDateString()} — {new Date(trip.end_date).toLocaleDateString()}</p>
+                  {trip.total_budget && <p style={{ fontSize: '12px', color: '#94A3B8', marginTop: '4px' }}>Budget: ${Number(trip.total_budget).toFixed(2)}</p>}
                 </div>
               </Link>
             </motion.div>
