@@ -5,8 +5,9 @@ import { usePacking } from '@/hooks/usePacking';
 import { useTrips } from '@/hooks/useTrips';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Plus, Trash2, RotateCcw, Check, Share2, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, RotateCcw, Check, Share2, ChevronDown, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 const CATEGORIES = ['DOCUMENTS', 'CLOTHING', 'ELECTRONICS', 'OTHER'];
 
@@ -82,6 +83,11 @@ export default function PackingPage() {
   return (
     <div style={{ maxWidth: '720px', margin: '0 auto', padding: '24px' }}>
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+        {/* Back link */}
+        <Link href={`/trip/${id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#475569', textDecoration: 'none', marginBottom: '16px' }}>
+          <ChevronLeft style={{ width: '14px', height: '14px' }} /> Back to My Trips
+        </Link>
+
         {/* Title */}
         <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '20px' }}>
           Packing Checklist
