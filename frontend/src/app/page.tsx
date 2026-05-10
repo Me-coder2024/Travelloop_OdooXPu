@@ -3,8 +3,11 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, MapPin, Plane, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { SearchBar } from '@/components/ui/SearchBar';
 import { TripCardSkeleton } from '@/components/ui/Skeleton';
 import { TripStatusBadge } from '@/components/ui/Badge';
+import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import api from '@/lib/api';
@@ -15,9 +18,12 @@ export default function LandingPage() {
   const [trips, setTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [groupBy, setGroupBy] = useState('All');
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [sortBy, setSortBy] = useState('Default');
 
   useEffect(() => {
-    if (authLoading) return; // Wait for auth to resolve first
+    if (authLoading) return;
     const load = async () => {
       try {
         const [citiesRes, tripsRes] = await Promise.all([
@@ -32,31 +38,42 @@ export default function LandingPage() {
     load();
   }, [user, authLoading]);
 
-  const filtered = cities.filter(c =>
+  let filtered = cities.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.country.toLowerCase().includes(search.toLowerCase())
   );
+  if (activeFilter !== 'All') {
+    filtered = filtered.filter(c => c.region?.toLowerCase() === activeFilter.toLowerCase());
+  }
+  if (sortBy === 'Name A-Z') filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+  if (sortBy === 'Name Z-A') filtered = [...filtered].sort((a, b) => b.name.localeCompare(a.name));
+  if (sortBy === 'Cost ↑') filtered = [...filtered].sort((a, b) => a.cost_index - b.cost_index);
+  if (sortBy === 'Cost ↓') filtered = [...filtered].sort((a, b) => b.cost_index - a.cost_index);
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Banner */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[var(--color-primary)] via-slate-800 to-slate-900 text-white">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920')] bg-cover bg-center opacity-20" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-              Plan Your Perfect<br /><span className="text-blue-400">Adventure</span>
+    <div style={{ minHeight: '100vh' }}>
+      {/* ── Hero ── */}
+      <section style={{ background: '#0F172A', color: '#F8FAFC', padding: 'clamp(40px, 8vw, 64px) 0 clamp(48px, 8vw, 72px)' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+            <p style={{ fontSize: '13px', fontWeight: 500, color: '#94A3B8', marginBottom: '12px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              Discover your next destination
+            </p>
+            <h1 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, lineHeight: 1.15, letterSpacing: '-0.03em', marginBottom: '14px', color: '#F8FAFC' }}>
+              Plan Your Perfect<br />Adventure
             </h1>
-            <p className="text-lg text-slate-300 mb-8 max-w-xl">Create itineraries, track expenses, and share your travel experiences with Traveloop.</p>
-            <div className="flex flex-wrap gap-3">
+            <p style={{ fontSize: '16px', color: '#94A3B8', maxWidth: '480px', lineHeight: 1.6, marginBottom: '28px' }}>
+              Create itineraries, track expenses, and share your travel experiences with Traveloop.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               <Link href={user ? '/trip/new' : '/register'}>
-                <Button size="lg" className="bg-blue-500 hover:bg-blue-600 text-white">
-                  <Plane className="h-5 w-5 mr-2" />Plan a Trip
+                <Button size="lg" variant="primary">
+                  <Plane style={{ width: '16px', height: '16px', marginRight: '8px' }} />Plan a Trip
                 </Button>
               </Link>
               <Link href="/search">
-                <Button size="lg" variant="secondary" className="border-white/20 text-white hover:bg-white/10">
-                  <Search className="h-5 w-5 mr-2" />Explore Destinations
+                <Button size="lg" variant="ghost" style={{ background: 'transparent', color: '#F8FAFC', border: '1px solid #334155' }}>
+                  <Search style={{ width: '16px', height: '16px', marginRight: '8px' }} />Explore Destinations
                 </Button>
               </Link>
             </div>
@@ -64,41 +81,62 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Search Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-10">
-        <div className="bg-white rounded-2xl shadow-lg border border-[var(--color-border)] p-4 flex items-center gap-3">
-          <Search className="h-5 w-5 text-[var(--color-text-muted)]" />
-          <input type="text" placeholder="Search cities, countries, or destinations..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 text-sm border-none outline-none bg-transparent placeholder:text-[var(--color-text-muted)]" />
-        </div>
+      {/* ── Search Bar ── */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 16px 0' }}>
+        <SearchBar
+          value={search} onChange={setSearch}
+          placeholder="Search cities, countries, or destinations..."
+          groupByOptions={['All', 'Region', 'Country']}
+          groupBy={groupBy} onGroupByChange={setGroupBy}
+          filterOptions={['All', ...Array.from(new Set(cities.map(c => c.region).filter(Boolean)))]}
+          activeFilter={activeFilter} onFilterChange={setActiveFilter}
+          sortOptions={['Default', 'Name A-Z', 'Name Z-A', 'Cost ↑', 'Cost ↓']}
+          sortBy={sortBy} onSortChange={setSortBy}
+        />
       </div>
 
-      {/* Top Regional Selections */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">Top Regional Selections</h2>
-          <Link href="/search" className="text-sm text-[var(--color-accent)] font-medium hover:underline">View all →</Link>
+      {/* ── Destinations ── */}
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A' }}>Top Regional Selections</h2>
+            <p style={{ fontSize: '13px', color: '#475569', marginTop: '2px' }}>Popular destinations chosen by travelers</p>
+          </div>
+          <Link href="/search" style={{ fontSize: '13px', color: '#1D4ED8', fontWeight: 600, textDecoration: 'none' }}>View all →</Link>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[1,2,3,4].map(i => <TripCardSkeleton key={i} />)}
           </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            title="No destinations found"
+            description={search ? `No results for "${search}".` : "Destinations will appear here soon."}
+            icon={<MapPin style={{ width: '24px', height: '24px', color: '#94A3B8' }} />}
+          />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', gap: '14px' }}>
             {filtered.slice(0, 8).map((city, i) => (
-              <motion.div key={city.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, duration: 0.4 }}>
-                <Link href={`/search?city=${city.name}`} className="group block bg-white rounded-xl overflow-hidden border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-                  <div className="relative h-48 overflow-hidden">
-                    <img src={city.image_url || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400'} alt={city.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                    <div className="absolute bottom-3 left-3 text-white">
-                      <h3 className="font-semibold text-lg">{city.name}</h3>
-                      <p className="text-sm text-white/80 flex items-center gap-1"><MapPin className="h-3 w-3" />{city.country}</p>
+              <motion.div key={city.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, duration: 0.3 }}>
+                <Link href={`/search?city=${city.name}`} style={{ display: 'block', background: '#FFFFFF', borderRadius: '10px', overflow: 'hidden', border: '1px solid #E2E8F0', textDecoration: 'none', transition: 'border-color 0.15s' }}>
+                  <div style={{ position: 'relative', height: '170px', overflow: 'hidden' }}>
+                    <img
+                      src={city.image_url || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400'}
+                      alt={city.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '40px 14px 12px', background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent)' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2 }}>{city.name}</h3>
+                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                        <MapPin style={{ width: '11px', height: '11px' }} />{city.country}
+                      </p>
                     </div>
                   </div>
-                  <div className="p-3">
-                    <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2">{city.description}</p>
+                  <div style={{ padding: '10px 14px 12px' }}>
+                    <p style={{ fontSize: '12px', color: '#475569', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {city.description}
+                    </p>
                   </div>
                 </Link>
               </motion.div>
@@ -107,29 +145,59 @@ export default function LandingPage() {
         )}
       </section>
 
-      {/* Previous Trips */}
-      {user && trips.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">Your Trips</h2>
-            <Link href="/trips" className="text-sm text-[var(--color-accent)] font-medium hover:underline">View all →</Link>
+      {/* ── Previous Trips ── */}
+      {user && (
+        <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px 48px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+            <div>
+              <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A' }}>Previous Trips</h2>
+              <p style={{ fontSize: '13px', color: '#475569', marginTop: '2px' }}>Your recent travel plans</p>
+            </div>
+            {trips.length > 0 && (
+              <Link href="/trips" style={{ fontSize: '13px', color: '#1D4ED8', fontWeight: 600, textDecoration: 'none' }}>View all →</Link>
+            )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {trips.slice(0, 6).map((trip, i) => (
-              <motion.div key={trip.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-                <Link href={`/trip/${trip.id}`} className="block bg-white rounded-xl border border-[var(--color-border)] p-5 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-semibold text-[var(--color-text-primary)]">{trip.name}</h3>
-                    <TripStatusBadge status={trip.status} />
-                  </div>
-                  <p className="text-sm text-[var(--color-text-secondary)] flex items-center gap-1 mb-2"><MapPin className="h-3.5 w-3.5" />{trip.place}</p>
-                  <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1"><Calendar className="h-3 w-3" />{new Date(trip.start_date).toLocaleDateString()} — {new Date(trip.end_date).toLocaleDateString()}</p>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1,2,3,4].map(i => <TripCardSkeleton key={i} />)}
+            </div>
+          ) : trips.length === 0 ? (
+            <EmptyState
+              title="No trips yet"
+              description="Start planning your first adventure!"
+              actionLabel="Plan a Trip"
+              onAction={() => window.location.href = '/trip/new'}
+              icon={<Plane style={{ width: '24px', height: '24px', color: '#94A3B8' }} />}
+            />
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))', gap: '14px' }}>
+              {trips.slice(0, 8).map((trip, i) => (
+                <motion.div key={trip.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
+                  <Link href={`/trip/${trip.id}`} style={{ display: 'block', background: '#FFFFFF', borderRadius: '10px', border: '1px solid #E2E8F0', overflow: 'hidden', textDecoration: 'none' }}>
+                    <div style={{ height: '3px', background: '#1D4ED8' }} />
+                    <div style={{ padding: '16px 18px' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>{trip.name}</h3>
+                        <TripStatusBadge status={trip.status} />
+                      </div>
+                      <p style={{ fontSize: '13px', color: '#475569', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                        <MapPin style={{ width: '13px', height: '13px' }} />{trip.place}
+                      </p>
+                      <p style={{ fontSize: '12px', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Calendar style={{ width: '12px', height: '12px' }} />
+                        {new Date(trip.start_date).toLocaleDateString()} — {new Date(trip.end_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </section>
       )}
+
+      {user && <FloatingActionButton href="/trip/new" label="Plan a Trip" />}
     </div>
   );
 }
