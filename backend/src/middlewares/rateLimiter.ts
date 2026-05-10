@@ -1,4 +1,6 @@
+// Rate limiting - auth 10/15min, API 100/min
 import { RateLimiterMemory } from 'rate-limiter-flexible';
+// Rate limiting - auth 10/15min, API 100/min
 import { Request, Response, NextFunction } from 'express';
 
 // Auth endpoints: 10 requests per 15 minutes
