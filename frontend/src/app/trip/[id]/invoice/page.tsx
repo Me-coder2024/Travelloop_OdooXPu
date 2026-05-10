@@ -1,18 +1,21 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useTrips } from '@/hooks/useTrips';
-import { Button } from '@/components/ui/Button';
+import { SearchBar } from '@/components/ui/SearchBar';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Download, FileText, CheckCircle, DollarSign } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Download, FileText, CheckCircle, ChevronLeft, MapPin, Calendar, Users, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 export default function InvoicePage() {
   const { id } = useParams<{ id: string }>();
   const { expenses, summary, loading, fetchExpenses, fetchSummary, updateExpense } = useExpenses(id);
   const { trip, fetchTrip } = useTrips();
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('Default');
+  const [activeFilter, setActiveFilter] = useState('All');
 
   useEffect(() => { fetchExpenses(); fetchSummary(); fetchTrip(id); }, [fetchExpenses, fetchSummary, fetchTrip, id]);
 
@@ -23,82 +26,201 @@ export default function InvoicePage() {
   };
 
   const handleDownload = () => {
-    const content = `TRAVELOOP - TRIP INVOICE\n${'='.repeat(50)}\nTrip: ${trip?.name}\nPlace: ${trip?.place}\nDates: ${trip?.start_date ? new Date(trip.start_date).toLocaleDateString() : ''} - ${trip?.end_date ? new Date(trip.end_date).toLocaleDateString() : ''}\nTotal Budget: $${Number(summary?.total_budget || 0).toFixed(2)}\nTotal Spent: $${Number(summary?.total_spent || 0).toFixed(2)}\n\n${'─'.repeat(50)}\nITEMIZED EXPENSES\n${'─'.repeat(50)}\n${expenses.map((e: any) => `${e.category?.name}\t${e.description}\t${e.quantity}\t$${Number(e.unit_cost).toFixed(2)}\t$${Number(e.amount).toFixed(2)}`).join('\n')}\n${'─'.repeat(50)}\nSUBTOTAL: $${Number(summary?.total_spent || 0).toFixed(2)}`;
+    const rows = filteredExpenses.map((e: any, i: number) =>
+      `${i + 1}\t${e.category?.name || '-'}\t${e.description}\t${e.quantity}\t$${Number(e.unit_cost).toFixed(2)}\t$${Number(e.amount).toFixed(2)}`
+    ).join('\n');
+    const content = `TRAVELOOP — EXPENSE INVOICE\n${'═'.repeat(60)}\nTrip: ${trip?.name}\nPlace: ${trip?.place}\nInvoice ID: INV-${id?.slice(0, 8).toUpperCase()}\nRecorded Date: ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}\nPayment Status: ${expenses.every((e: any) => e.payment_status === 'PAID') ? 'Paid' : 'Pending'}\n\n${'─'.repeat(60)}\n#\tCategory\tDescription\tQty\tUnit Cost\tAmount\n${'─'.repeat(60)}\n${rows}\n${'─'.repeat(60)}\nSubtotal:\t\t\t\t\t₹ ${Number(summary?.total_spent || 0).toFixed(0)}\nTax (0%):\t\t\t\t\t₹ 0\nGrand Total:\t\t\t\t\t₹ ${Number(summary?.total_spent || 0).toFixed(0)}\n`;
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `invoice-${trip?.name || 'trip'}.txt`; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = `invoice-${trip?.name || 'trip'}.txt`; a.click();
     URL.revokeObjectURL(url);
   };
 
-  if (loading) return <div className="max-w-5xl mx-auto px-4 py-8"><Skeleton className="h-40 mb-4" /><Skeleton className="h-80" /></div>;
+  // Filter & sort expenses
+  let filteredExpenses = expenses.filter((e: any) =>
+    e.description?.toLowerCase().includes(search.toLowerCase()) ||
+    e.category?.name?.toLowerCase().includes(search.toLowerCase())
+  );
+  if (activeFilter !== 'All') {
+    filteredExpenses = filteredExpenses.filter((e: any) => e.category?.name === activeFilter);
+  }
+  if (sortBy === 'Amount ↑') filteredExpenses = [...filteredExpenses].sort((a, b) => Number(a.amount) - Number(b.amount));
+  if (sortBy === 'Amount ↓') filteredExpenses = [...filteredExpenses].sort((a, b) => Number(b.amount) - Number(a.amount));
+  if (sortBy === 'Name A-Z') filteredExpenses = [...filteredExpenses].sort((a, b) => a.description.localeCompare(b.description));
 
-  const COLORS = ['#4F46E5', '#0EA5E9', '#F59E0B', '#10B981', '#8B5CF6', '#6B7280'];
-  const chartData = summary?.by_category?.map((c: any) => ({ name: c.category_name, value: Number(c.total_amount) })) || [];
+  const totalSpent = Number(summary?.total_spent || 0);
+  const totalBudget = Number(summary?.total_budget || 0);
+  const remaining = totalBudget - totalSpent;
+  const categories = Array.from(new Set(expenses.map((e: any) => e.category?.name).filter(Boolean)));
+
+  if (loading) return (
+    <div style={{ maxWidth: '960px', margin: '0 auto', padding: '24px' }}>
+      <Skeleton className="h-10 w-64 mb-6" />
+      <Skeleton className="h-40 mb-6" />
+      <Skeleton className="h-80" />
+    </div>
+  );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-bold mb-6">Expense Invoice</h1>
+    <div style={{ maxWidth: '960px', margin: '0 auto', padding: '24px' }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
 
-        {/* Trip Summary Card */}
-        <div className="bg-white rounded-2xl border border-[var(--color-border)] p-6 mb-6 flex flex-wrap gap-8 items-center">
-          <div className="flex-1 min-w-[200px]">
-            <h2 className="text-xl font-bold">{trip?.name}</h2>
-            <p className="text-[var(--color-text-secondary)]">{trip?.place}</p>
-            <p className="text-sm text-[var(--color-text-muted)] mt-1">{trip?.start_date ? new Date(trip.start_date).toLocaleDateString() : ''} — {trip?.end_date ? new Date(trip.end_date).toLocaleDateString() : ''}</p>
-            <div className="flex gap-6 mt-4">
-              <div><p className="text-xs text-[var(--color-text-muted)]">Budget</p><p className="text-xl font-bold text-[var(--color-accent)]">${Number(summary?.total_budget || 0).toFixed(2)}</p></div>
-              <div><p className="text-xs text-[var(--color-text-muted)]">Spent</p><p className="text-xl font-bold">${Number(summary?.total_spent || 0).toFixed(2)}</p></div>
-              <div><p className="text-xs text-[var(--color-text-muted)]">Remaining</p><p className="text-xl font-bold text-[var(--color-success)]">${(Number(summary?.total_budget || 0) - Number(summary?.total_spent || 0)).toFixed(2)}</p></div>
+        {/* Title */}
+        <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '20px' }}>
+          Expense Invoice
+        </h1>
+
+        {/* Search Bar */}
+        <div style={{ marginBottom: '20px' }}>
+          <SearchBar
+            value={search} onChange={setSearch}
+            placeholder="Search invoices..."
+            filterOptions={['All', ...categories]}
+            activeFilter={activeFilter} onFilterChange={setActiveFilter}
+            sortOptions={['Default', 'Amount ↑', 'Amount ↓', 'Name A-Z']}
+            sortBy={sortBy} onSortChange={setSortBy}
+            groupByOptions={['All', 'Category']}
+            groupBy="All" onGroupByChange={() => {}}
+          />
+        </div>
+
+        {/* Back link */}
+        <Link href={`/trip/${id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#475569', textDecoration: 'none', marginBottom: '20px' }}>
+          <ChevronLeft style={{ width: '14px', height: '14px' }} /> Back to My Trips
+        </Link>
+
+        {/* ── Trip Summary + Budget Insights ── */}
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
+          {/* Trip info card */}
+          <div style={{ flex: 2, minWidth: '300px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '20px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+            {/* Trip image placeholder */}
+            <div style={{ width: '100px', height: '80px', borderRadius: '8px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <MapPin style={{ width: '24px', height: '24px', color: '#94A3B8' }} />
+            </div>
+
+            {/* Trip details */}
+            <div style={{ flex: 1, minWidth: '140px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', marginBottom: '4px' }}>{trip?.name || 'Trip'}</h2>
+              <p style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '12px' }}>INV-{id?.slice(0, 8).toUpperCase()}</p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px' }}>
+                <div>
+                  <p style={{ color: '#94A3B8', marginBottom: '2px' }}>Invoice Id</p>
+                  <p style={{ color: '#0F172A', fontWeight: 600 }}>INV-{id?.slice(0, 8).toUpperCase()}</p>
+                </div>
+                <div>
+                  <p style={{ color: '#94A3B8', marginBottom: '2px' }}>Recorded date</p>
+                  <p style={{ color: '#0F172A', fontWeight: 600 }}>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                </div>
+                <div>
+                  <p style={{ color: '#94A3B8', marginBottom: '2px' }}>Member Details</p>
+                  <p style={{ color: '#0F172A', fontWeight: 600 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Users style={{ width: '12px', height: '12px' }} /> {trip?.members?.length || 1} member{(trip?.members?.length || 1) > 1 ? 's' : ''}
+                    </span>
+                  </p>
+                </div>
+                <div>
+                  <p style={{ color: '#94A3B8', marginBottom: '2px' }}>Payment status</p>
+                  <p style={{ color: expenses.every((e: any) => e.payment_status === 'PAID') ? '#065F46' : '#92400E', fontWeight: 600 }}>
+                    {expenses.every((e: any) => e.payment_status === 'PAID') ? 'Paid' : 'Pending'}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Budget Donut Chart */}
-          {chartData.length > 0 && (
-            <div className="w-[200px]">
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart><Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2}>
-                  {chartData.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                </Pie><Tooltip /></PieChart>
-              </ResponsiveContainer>
+          {/* Budget insights */}
+          <div style={{ flex: 1, minWidth: '220px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '20px' }}>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A', marginBottom: '16px' }}>Budget Insights</p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#475569' }}>Total Budget:</span>
+                <span style={{ fontWeight: 700, color: '#0F172A' }}>₹ {totalBudget.toFixed(0)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#475569' }}>Spent:</span>
+                <span style={{ fontWeight: 700, color: '#991B1B' }}>- ₹ {totalSpent.toFixed(0)}</span>
+              </div>
+              <div style={{ height: '1px', background: '#E2E8F0' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#475569' }}>Remaining:</span>
+                <span style={{ fontWeight: 700, color: remaining >= 0 ? '#065F46' : '#991B1B' }}>₹ {remaining.toFixed(0)}</span>
+              </div>
             </div>
-          )}
+
+            <Link href={`/trip/${id}`} style={{ display: 'block', width: '100%', textAlign: 'center', padding: '8px', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '13px', fontWeight: 600, color: '#0F172A', textDecoration: 'none', background: '#FFFFFF' }}>
+              View Full Budget
+            </Link>
+          </div>
         </div>
 
-        {/* Itemized Table */}
-        <div className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden mb-6">
-          <table className="w-full">
-            <thead><tr className="bg-gray-50 text-xs text-[var(--color-text-muted)] uppercase">
-              <th className="px-6 py-3 text-left">Category</th><th className="px-6 py-3 text-left">Description</th>
-              <th className="px-6 py-3 text-right">Qty</th><th className="px-6 py-3 text-right">Unit Cost</th><th className="px-6 py-3 text-right">Amount</th>
-            </tr></thead>
-            <tbody>
-              {expenses.map((exp: any) => (
-                <tr key={exp.id} className="border-t border-[var(--color-border)]">
-                  <td className="px-6 py-3"><span className="inline-flex items-center gap-1 text-sm"><span>{exp.category?.icon}</span>{exp.category?.name}</span></td>
-                  <td className="px-6 py-3 text-sm">{exp.description}</td>
-                  <td className="px-6 py-3 text-sm text-right">{exp.quantity}</td>
-                  <td className="px-6 py-3 text-sm text-right">${Number(exp.unit_cost).toFixed(2)}</td>
-                  <td className="px-6 py-3 text-sm text-right font-medium">${Number(exp.amount).toFixed(2)}</td>
+        {/* ── Itemized Table ── */}
+        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden', marginBottom: '24px' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <thead>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#475569', fontSize: '12px' }}>#</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#475569', fontSize: '12px' }}>Category</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#475569', fontSize: '12px' }}>Description</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#475569', fontSize: '12px' }}>Qty/Adults</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#475569', fontSize: '12px' }}>Unit Cost</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#475569', fontSize: '12px' }}>Amount</th>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="border-t-2 border-[var(--color-primary)]">
-                <td colSpan={4} className="px-6 py-3 text-right font-bold">Subtotal</td>
-                <td className="px-6 py-3 text-right font-bold">${Number(summary?.total_spent || 0).toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
+              </thead>
+              <tbody>
+                {filteredExpenses.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: '#94A3B8' }}>No expenses found</td>
+                  </tr>
+                ) : (
+                  filteredExpenses.map((exp: any, i: number) => (
+                    <tr key={exp.id} style={{ borderBottom: '1px solid #E2E8F0' }}>
+                      <td style={{ padding: '12px 16px', color: '#0F172A', fontWeight: 500 }}>{i + 1}</td>
+                      <td style={{ padding: '12px 16px', color: '#0F172A' }}>{exp.category?.name || '-'}</td>
+                      <td style={{ padding: '12px 16px', color: '#0F172A' }}>{exp.description}</td>
+                      <td style={{ padding: '12px 16px', color: '#0F172A', textAlign: 'center' }}>{exp.quantity}</td>
+                      <td style={{ padding: '12px 16px', color: '#0F172A', textAlign: 'right' }}>₹ {Number(exp.unit_cost).toFixed(0)}</td>
+                      <td style={{ padding: '12px 16px', color: '#0F172A', textAlign: 'right', fontWeight: 600 }}>₹ {Number(exp.amount).toFixed(0)}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+              {filteredExpenses.length > 0 && (
+                <tfoot>
+                  <tr style={{ borderTop: '1px solid #E2E8F0' }}>
+                    <td colSpan={5} style={{ padding: '10px 16px', textAlign: 'right', fontSize: '13px', color: '#475569' }}>Subtotal</td>
+                    <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 700, color: '#0F172A' }}>₹ {totalSpent.toFixed(0)}</td>
+                  </tr>
+                  <tr>
+                    <td colSpan={5} style={{ padding: '6px 16px', textAlign: 'right', fontSize: '13px', color: '#475569' }}>Tax (0%)</td>
+                    <td style={{ padding: '6px 16px', textAlign: 'right', fontWeight: 600, color: '#0F172A' }}>₹ 0</td>
+                  </tr>
+                  <tr style={{ borderTop: '2px solid #0F172A' }}>
+                    <td colSpan={5} style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: '#0F172A' }}>Grand Total</td>
+                    <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, fontSize: '15px', color: '#0F172A' }}>₹ {totalSpent.toFixed(0)}</td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-3">
-          <Button onClick={handleDownload}><Download className="h-4 w-4 mr-1" />Download Invoice</Button>
-          <Button variant="secondary" onClick={handleDownload}><FileText className="h-4 w-4 mr-1" />Export as PDF</Button>
-          <Button variant="secondary" onClick={handleMarkPaid}><CheckCircle className="h-4 w-4 mr-1" />Mark as Paid</Button>
+        {/* ── Bottom Action Buttons ── */}
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button onClick={handleDownload} style={{ flex: 1, minWidth: '140px', height: '42px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#FFFFFF', fontSize: '13px', fontWeight: 600, color: '#0F172A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Download style={{ width: '14px', height: '14px' }} /> Download Invoice
+          </button>
+          <button onClick={handleDownload} style={{ flex: 1, minWidth: '140px', height: '42px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#FFFFFF', fontSize: '13px', fontWeight: 600, color: '#0F172A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <FileText style={{ width: '14px', height: '14px' }} /> Export as PDF
+          </button>
+          <button onClick={handleMarkPaid} style={{ flex: 1, minWidth: '140px', height: '42px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#FFFFFF', fontSize: '13px', fontWeight: 600, color: '#0F172A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <CheckCircle style={{ width: '14px', height: '14px' }} /> Mark as paid
+          </button>
         </div>
+
       </motion.div>
     </div>
   );
