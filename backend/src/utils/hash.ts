@@ -1,3 +1,4 @@
+// bcrypt with 12 salt rounds - OWASP compliant
 import bcrypt from 'bcryptjs';
 
 const SALT_ROUNDS = 12;
