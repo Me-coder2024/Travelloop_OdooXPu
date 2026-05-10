@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { SectionSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { Plus, Trash2, Calendar, DollarSign, GripVertical, ChevronLeft, Layers } from 'lucide-react';
+import { Plus, Trash2, Calendar, DollarSign, ChevronLeft, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
@@ -35,122 +35,75 @@ export default function BuilderPage() {
 
   return (
     <div style={{ maxWidth: '720px', margin: '0 auto', padding: '24px 16px' }}>
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        {/* Breadcrumb */}
-        <Link
-          href={`/trip/${id}`}
-          className="inline-flex items-center gap-1 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors mb-6"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back to trip
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+
+        {/* Back link */}
+        <Link href={`/trip/${id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#475569', textDecoration: 'none', marginBottom: '20px' }}>
+          <ChevronLeft style={{ width: '14px', height: '14px' }} /> Back to trip
         </Link>
 
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '10px' }}>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Build Itinerary</h1>
-            <p className="text-[var(--color-text-secondary)] mt-1">
-              Add sections to organize your trip day by day
-            </p>
-          </div>
-          <Button onClick={() => setShowForm(true)} className="shrink-0">
-            <Plus className="h-4 w-4 mr-1.5" />Add Section
-          </Button>
-        </div>
+        {/* Title */}
+        <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '24px' }}>
+          Build Itinerary
+        </h1>
 
-        {/* Loading skeleton */}
+        {/* Loading */}
         {loading ? (
-          <div className="space-y-4">
-            {[1,2,3].map(i => <SectionSkeleton key={i} />)}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {[1, 2, 3].map(i => <SectionSkeleton key={i} />)}
           </div>
         ) : (
           <>
-            {/* Sections list with timeline */}
+            {/* ── Section Cards ── */}
             {sections.length > 0 ? (
-              <div className="relative">
-                {/* Timeline connector line */}
-                {sections.length > 1 && (
-                  <div className="timeline-line" style={{ top: '24px', bottom: '24px' }} />
-                )}
-
-                <AnimatePresence>
-                  <div className="space-y-6">
-                    {sections.map((section: any, i: number) => (
-                      <motion.div
-                        key={section.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.08 }}
-                        className="relative" style={{ paddingLeft: 'clamp(16px, 4vw, 56px)' }}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {sections.map((section: any, i: number) => (
+                  <motion.div
+                    key={section.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                  >
+                    <div style={{ background: '#FFFFFF', borderRadius: '10px', border: '1px solid #E2E8F0', padding: '18px 20px', position: 'relative' }}>
+                      {/* Delete button */}
+                      <button
+                        onClick={() => deleteSection(section.id)}
+                        style={{ position: 'absolute', top: '14px', right: '14px', padding: '4px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#FFFFFF', cursor: 'pointer', display: 'flex' }}
                       >
-                        {/* Timeline dot */}
-                        <div className="timeline-dot" style={{ top: '24px' }} />
+                        <Trash2 style={{ width: '14px', height: '14px', color: '#991B1B' }} />
+                      </button>
 
-                        {/* Section card */}
-                        <div className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden hover:shadow-sm transition-shadow group">
-                          {/* Section header */}
-                          <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                            <div className="flex items-center gap-3 min-w-0">
-                              <GripVertical className="h-4 w-4 text-[var(--color-text-muted)] cursor-grab shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              <div className="min-w-0">
-                                <h3 className="font-semibold text-lg text-[var(--color-text-primary)] truncate">
-                                  {section.title}
-                                </h3>
-                                {section.description && (
-                                  <p className="text-sm text-[var(--color-text-secondary)] mt-0.5 line-clamp-2">
-                                    {section.description}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => deleteSection(section.id)}
-                              className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-red-50 transition-all shrink-0 opacity-0 group-hover:opacity-100"
-                              aria-label={`Delete section ${section.title}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
+                      {/* Section title */}
+                      <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', marginBottom: '6px', paddingRight: '36px' }}>
+                        Section {i + 1}: {section.title}
+                      </h3>
 
-                          {/* Metadata badges */}
-                          <div className="px-6 pb-4 flex flex-wrap gap-3">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-accent-soft)] text-[var(--color-accent)] text-xs font-medium">
-                              <Calendar className="h-3.5 w-3.5" />
-                              {new Date(section.date_from).toLocaleDateString()} → {new Date(section.date_to).toLocaleDateString()}
-                            </span>
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-medium">
-                              <DollarSign className="h-3.5 w-3.5" />
-                              Budget: ${Number(section.budget).toFixed(2)}
-                            </span>
-                          </div>
+                      {/* Description */}
+                      <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.6, marginBottom: '14px' }}>
+                        {section.description || 'All the necessary information about this section. This can be anything like travel section, hotel or any other activity.'}
+                      </p>
 
-                          {/* Activities sub-list */}
-                          {section.activities?.length > 0 && (
-                            <div className="border-t border-[var(--color-border)] bg-[var(--color-surface-secondary)]">
-                              <div className="px-6 py-2">
-                                <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                                  Activities
-                                </p>
-                              </div>
-                              <div className="divide-y divide-[var(--color-border)]">
-                                {section.activities.map((a: any) => (
-                                  <div key={a.id} className="px-6 py-2.5 flex items-center justify-between">
-                                    <span className="text-sm text-[var(--color-text-primary)]">
-                                      {a.custom_name || a.activity?.name}
-                                    </span>
-                                    <span className="text-sm font-medium text-[var(--color-text-secondary)]">
-                                      ${Number(a.cost).toFixed(2)}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </AnimatePresence>
+                      {/* Date Range + Budget pills */}
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#FFFFFF', fontSize: '13px', fontWeight: 500, color: '#0F172A' }}>
+                          <Calendar style={{ width: '13px', height: '13px', color: '#475569' }} />
+                          Date Range: {new Date(section.date_from).toLocaleDateString()} to {new Date(section.date_to).toLocaleDateString()}
+                        </span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#FFFFFF', fontSize: '13px', fontWeight: 500, color: '#0F172A' }}>
+                          <DollarSign style={{ width: '13px', height: '13px', color: '#475569' }} />
+                          Budget of this section: ₹{Number(section.budget).toFixed(0)}
+                        </span>
+                      </div>
+
+                      {/* Activities count */}
+                      {section.activities?.length > 0 && (
+                        <p style={{ fontSize: '12px', color: '#94A3B8', marginTop: '10px' }}>
+                          {section.activities.length} activit{section.activities.length === 1 ? 'y' : 'ies'} planned
+                        </p>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             ) : (
               !showForm && (
@@ -159,91 +112,47 @@ export default function BuilderPage() {
                   description="Start building your itinerary by adding sections for each part of your trip."
                   actionLabel="Add First Section"
                   onAction={() => setShowForm(true)}
-                  icon={<Layers className="h-8 w-8 text-[var(--color-text-muted)]" />}
+                  icon={<Layers style={{ width: '28px', height: '28px', color: '#94A3B8' }} />}
                 />
               )
             )}
 
-            {/* Add Section Form */}
+            {/* ── Add Section Form ── */}
             <AnimatePresence>
               {showForm && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  exit={{ opacity: 0, y: -10, height: 0 }}
-                  className="mt-8 overflow-hidden"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  style={{ overflow: 'hidden', marginTop: sections.length > 0 ? '14px' : '0' }}
                 >
-                  <div className="bg-white rounded-xl border-2 border-dashed border-[var(--color-accent)] p-6">
-                    <div className="flex items-center gap-2 mb-5">
-                      <div className="w-8 h-8 rounded-lg bg-[var(--color-accent-soft)] flex items-center justify-center">
-                        <Plus className="h-4 w-4 text-[var(--color-accent)]" />
-                      </div>
-                      <h3 className="font-semibold">New Section</h3>
-                    </div>
-
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <div style={{ background: '#FFFFFF', borderRadius: '10px', border: '2px dashed #1D4ED8', padding: '20px' }}>
+                    <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#0F172A', marginBottom: '14px' }}>New Section</h3>
+                    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <Input
                         id="title"
                         label="Section Title"
                         placeholder="e.g. Day 1-3: City Exploration"
                         error={errors.title?.message}
-                        helperText="Name this part of your trip"
                         {...register('title')}
                       />
-
                       <div>
-                        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-                          Description
-                        </label>
+                        <label style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A', display: 'block', marginBottom: '6px' }}>Description</label>
                         <textarea
-                          rows={2}
-                          className="w-full px-3 py-2.5 rounded-lg border border-[var(--color-border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] hover:border-[var(--color-text-muted)] transition-all duration-200 resize-none placeholder:text-[var(--color-text-muted)]"
+                          rows={3}
                           placeholder="What will you do during this section? Hotels, travel, activities..."
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '14px', color: '#0F172A', outline: 'none', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }}
                           {...register('description')}
                         />
                       </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Input
-                          id="date_from"
-                          label="Start Date"
-                          type="date"
-                          icon={<Calendar className="h-4 w-4" />}
-                          error={errors.date_from?.message}
-                          {...register('date_from')}
-                        />
-                        <Input
-                          id="date_to"
-                          label="End Date"
-                          type="date"
-                          icon={<Calendar className="h-4 w-4" />}
-                          error={errors.date_to?.message}
-                          {...register('date_to')}
-                        />
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+                        <Input id="date_from" label="Start Date" type="date" icon={<Calendar style={{ width: '14px', height: '14px' }} />} error={errors.date_from?.message} {...register('date_from')} />
+                        <Input id="date_to" label="End Date" type="date" icon={<Calendar style={{ width: '14px', height: '14px' }} />} error={errors.date_to?.message} {...register('date_to')} />
                       </div>
-
-                      <Input
-                        id="budget"
-                        label="Budget for this section"
-                        type="number"
-                        placeholder="1000"
-                        icon={<DollarSign className="h-4 w-4" />}
-                        error={errors.budget?.message}
-                        helperText="How much do you plan to spend on this section?"
-                        {...register('budget')}
-                      />
-
-                      <div className="flex gap-3 pt-2">
-                        <Button type="submit" variant="primary" loading={creating}>
-                          <Plus className="h-4 w-4 mr-1" />Add Section
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => { setShowForm(false); reset(); }}
-                        >
-                          Cancel
-                        </Button>
+                      <Input id="budget" label="Budget for this section" type="number" placeholder="1000" icon={<DollarSign style={{ width: '14px', height: '14px' }} />} error={errors.budget?.message} {...register('budget')} />
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                        <Button type="submit" variant="primary" loading={creating}><Plus style={{ width: '14px', height: '14px', marginRight: '4px' }} />Add Section</Button>
+                        <Button type="button" variant="ghost" onClick={() => { setShowForm(false); reset(); }}>Cancel</Button>
                       </div>
                     </form>
                   </div>
@@ -251,22 +160,23 @@ export default function BuilderPage() {
               )}
             </AnimatePresence>
 
-            {/* Bottom add section CTA when sections exist */}
-            {sections.length > 0 && !showForm && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="mt-8 flex justify-center"
-              >
+            {/* ── Bottom CTA: + Add another Section ── */}
+            {!showForm && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
                 <button
                   onClick={() => setShowForm(true)}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-dashed border-[var(--color-border)] text-sm font-medium text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] hover:bg-[var(--color-accent-soft)] transition-all duration-200"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    padding: '12px 28px', borderRadius: '8px',
+                    border: '1px solid #0F172A', background: '#FFFFFF',
+                    fontSize: '14px', fontWeight: 600, color: '#0F172A',
+                    cursor: 'pointer',
+                  }}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus style={{ width: '16px', height: '16px' }} />
                   Add another Section
                 </button>
-              </motion.div>
+              </div>
             )}
           </>
         )}
