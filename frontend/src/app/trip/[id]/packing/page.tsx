@@ -31,7 +31,7 @@ export default function PackingPage() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl font-bold mb-2">Packing Checklist</h1>
-        <p className="text-[var(--color-text-secondary)] mb-6">{packed} of {total} items packed</p>
+        <p className="text-[var(--color-text-secondary)] mb-6">{packed} of {total} items packed - keep going!</p>
 
         <ProgressBar value={progress} label="Packing Progress" className="mb-6" />
 
