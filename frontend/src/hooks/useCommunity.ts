@@ -1,4 +1,5 @@
 'use client';
+// Hook for community posts CRUD and reactions
 import { useState, useCallback } from 'react';
 import api from '@/lib/api';
 
