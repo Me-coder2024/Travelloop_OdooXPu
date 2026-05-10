@@ -10,6 +10,7 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+// PostgreSQL connection pool
 const pool = new Pool({
   host: 'localhost',
   port: 5432,
