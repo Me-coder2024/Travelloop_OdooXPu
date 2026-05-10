@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/Input';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { SearchBar } from '@/components/ui/SearchBar';
-import { Plus, Trash2, Edit3, Calendar, MapPin, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Edit3, Calendar, MapPin, ChevronDown, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 export default function NotesPage() {
   const { id } = useParams<{ id: string }>();
@@ -60,6 +61,11 @@ export default function NotesPage() {
   return (
     <div style={{ maxWidth: '720px', margin: '0 auto', padding: '24px' }}>
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+
+        {/* Back link */}
+        <Link href={`/trip/${id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#475569', textDecoration: 'none', marginBottom: '16px' }}>
+          <ChevronLeft style={{ width: '14px', height: '14px' }} /> Back to My Trips
+        </Link>
 
         {/* Search bar */}
         <div style={{ marginBottom: '20px' }}>
