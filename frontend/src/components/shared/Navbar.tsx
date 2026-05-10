@@ -20,65 +20,85 @@ export function Navbar() {
     { href: '/community', label: 'Community', icon: Users },
   ];
 
+  const isActive = (href: string) => pathname === href;
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[var(--color-border)]" role="navigation" aria-label="Main navigation">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-[var(--color-primary)]">
-            <Globe className="h-6 w-6 text-[var(--color-accent)]" />
+    <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, background: '#FFFFFF', borderBottom: '1px solid #E2E8F0' }} role="navigation" aria-label="Main navigation">
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
+          {/* Logo */}
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: 700, color: '#0F172A', textDecoration: 'none' }}>
+            <Globe style={{ width: '20px', height: '20px', color: '#1D4ED8' }} />
             Traveloop
           </Link>
 
           {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-1">
-            {links.map((l) => (
-              <Link key={l.href} href={l.href} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${pathname === l.href ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-gray-50'}`}>
-                <l.icon className="h-4 w-4" />{l.label}
-              </Link>
-            ))}
+          <div className="hidden md:flex" style={{ alignItems: 'center', gap: '2px' }}>
+            {links.map((l) => {
+              const active = isActive(l.href);
+              return (
+                <Link key={l.href} href={l.href} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, textDecoration: 'none', background: active ? '#EFF6FF' : 'transparent', color: active ? '#1D4ED8' : '#475569' }}>
+                  <l.icon style={{ width: '15px', height: '15px' }} />{l.label}
+                </Link>
+              );
+            })}
           </div>
 
-          <div className="hidden md:flex items-center gap-3">
-            {loading ? <div className="h-8 w-8 rounded-full skeleton" /> : user ? (
+          {/* Desktop right */}
+          <div className="hidden md:flex" style={{ alignItems: 'center', gap: '6px' }}>
+            {loading ? (
+              <div style={{ width: '28px', height: '28px', borderRadius: '999px', background: '#F1F5F9' }} />
+            ) : user ? (
               <>
                 {user.role === 'ADMIN' && (
-                  <Link href="/admin" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:bg-gray-50">
-                    <LayoutDashboard className="h-4 w-4" />Admin
+                  <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, color: '#475569', textDecoration: 'none' }}>
+                    <LayoutDashboard style={{ width: '15px', height: '15px' }} />Admin
                   </Link>
                 )}
-                <Link href="/profile" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:bg-gray-50">
-                  {user.avatar_url ? <img src={user.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" /> : <User className="h-4 w-4" />}
+                <Link href="/profile" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, color: '#475569', textDecoration: 'none' }}>
+                  {user.avatar_url ? <img src={user.avatar_url} alt="" style={{ width: '24px', height: '24px', borderRadius: '999px', objectFit: 'cover' }} /> : <User style={{ width: '15px', height: '15px' }} />}
                   {user.first_name}
                 </Link>
-                <button onClick={logout} className="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-red-50 transition-colors" aria-label="Sign out of your account">
-                  <LogOut className="h-4 w-4" />
+                <button onClick={logout} style={{ padding: '8px', borderRadius: '6px', color: '#94A3B8', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex' }} aria-label="Sign out">
+                  <LogOut style={{ width: '16px', height: '16px' }} />
                 </button>
               </>
             ) : (
-              <Link href="/login" className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-light)] transition-colors">Sign In</Link>
+              <Link href="/login" style={{ padding: '8px 18px', borderRadius: '6px', background: '#1D4ED8', color: '#FFFFFF', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>Sign In</Link>
             )}
           </div>
 
           {/* Mobile hamburger */}
-          <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)} style={{ padding: '8px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', color: '#0F172A' }} aria-label="Toggle menu">
+            {mobileOpen ? <X style={{ width: '22px', height: '22px' }} /> : <Menu style={{ width: '22px', height: '22px' }} />}
           </button>
         </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-[var(--color-border)] bg-white p-4 space-y-1">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${pathname === l.href ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' : 'text-[var(--color-text-secondary)]'}`}>
-              <l.icon className="h-4 w-4" />{l.label}
-            </Link>
-          ))}
-          {user && (
+        <div style={{ borderTop: '1px solid #E2E8F0', background: '#FFFFFF', padding: '8px 16px 12px' }} className="md:hidden">
+          {links.map((l) => {
+            const active = isActive(l.href);
+            return (
+              <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500, textDecoration: 'none', color: active ? '#1D4ED8' : '#0F172A', background: active ? '#EFF6FF' : 'transparent', marginBottom: '2px' }}>
+                <l.icon style={{ width: '18px', height: '18px' }} />{l.label}
+              </Link>
+            );
+          })}
+          {user ? (
             <>
-              <Link href="/profile" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--color-text-secondary)]"><User className="h-4 w-4" />Profile</Link>
-              <button onClick={logout} className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--color-danger)] w-full"><LogOut className="h-4 w-4" />Logout</button>
+              <Link href="/profile" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500, textDecoration: 'none', color: '#0F172A' }}>
+                <User style={{ width: '18px', height: '18px' }} />Profile
+              </Link>
+              <button onClick={logout} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500, color: '#991B1B', width: '100%', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                <LogOut style={{ width: '18px', height: '18px' }} />Logout
+              </button>
             </>
+          ) : (
+            <Link href="/login" onClick={() => setMobileOpen(false)} style={{ display: 'block', textAlign: 'center', padding: '12px', borderRadius: '8px', background: '#1D4ED8', color: '#FFFFFF', fontSize: '14px', fontWeight: 600, textDecoration: 'none', marginTop: '8px' }}>
+              Sign In
+            </Link>
           )}
         </div>
       )}
