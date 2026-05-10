@@ -1,0 +1,313 @@
+// Prisma schema for Traveloop — Travel Planning Application
+// All tables use UUID primary keys, created_at, updated_at
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TripStatus {
+  PLANNED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum ActivityCategory {
+  SIGHTSEEING
+  FOOD
+  ADVENTURE
+  CULTURE
+  TRANSPORT
+  STAY
+  OTHER
+}
+
+enum PackingCategory {
+  DOCUMENTS
+  CLOTHING
+  ELECTRONICS
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+}
+
+enum ReactionType {
+  LIKE
+  SAVE
+}
+
+enum SharePermission {
+  VIEW
+  EDIT
+}
+
+// ─── Models ───────────────────────────────────────────────
+
+model User {
+  id              String   @id @default(uuid())
+  username        String   @unique
+  first_name      String
+  last_name       String
+  email           String   @unique
+  password_hash   String
+  phone           String?
+  city            String?
+  country         String?
+  additional_info String?
+  avatar_url      String?
+  role            Role     @default(USER)
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  trips           Trip[]
+  expenses        Expense[]
+  packing_items   PackingItem[]
+  trip_notes      TripNote[]
+  community_posts CommunityPost[]
+  post_reactions  PostReaction[]
+  trip_shares     TripShare[]
+  audit_logs      AuditLog[]
+}
+
+model City {
+  id               String   @id @default(uuid())
+  name             String
+  country          String
+  region           String?
+  cost_index       Int      @default(0)
+  popularity_score Int      @default(0)
+  description      String?
+  image_url        String?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  activities ActivityCatalog[]
+  trip_stops TripStop[]
+}
+
+model ActivityCatalog {
+  id            String           @id @default(uuid())
+  city_id       String?
+  city          City?            @relation(fields: [city_id], references: [id])
+  name          String
+  category      ActivityCategory
+  description   String?
+  avg_cost      Decimal          @db.Decimal(10, 2)
+  duration_mins Int?
+  image_url     String?
+  created_at    DateTime         @default(now())
+  updated_at    DateTime         @updatedAt
+
+  section_activities SectionActivity[]
+}
+
+model Trip {
+  id              String     @id @default(uuid())
+  user_id         String
+  user            User       @relation(fields: [user_id], references: [id])
+  name            String
+  place           String
+  cover_image_url String?
+  description     String?
+  start_date      DateTime   @db.Date
+  end_date        DateTime   @db.Date
+  status          TripStatus @default(PLANNED)
+  is_public       Boolean    @default(false)
+  share_token     String     @unique @default(uuid())
+  total_budget    Decimal?   @db.Decimal(10, 2)
+  created_at      DateTime   @default(now())
+  updated_at      DateTime   @updatedAt
+
+  stops           TripStop[]
+  sections        ItinerarySection[]
+  expenses        Expense[]
+  packing_items   PackingItem[]
+  notes           TripNote[]
+  community_posts CommunityPost[]
+  shares          TripShare[]
+
+  @@index([user_id, status])
+  @@index([share_token])
+}
+
+model TripStop {
+  id             String   @id @default(uuid())
+  trip_id        String
+  city_id        String
+  trip           Trip     @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+  city           City     @relation(fields: [city_id], references: [id])
+  order_index    Int
+  arrival_date   DateTime @db.Date
+  departure_date DateTime @db.Date
+  notes          String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  trip_notes TripNote[]
+
+  @@index([trip_id, order_index])
+}
+
+model ItinerarySection {
+  id          String   @id @default(uuid())
+  trip_id     String
+  trip        Trip     @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  date_from   DateTime @db.Date
+  date_to     DateTime @db.Date
+  budget      Decimal  @db.Decimal(10, 2)
+  order_index Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  activities SectionActivity[]
+
+  @@index([trip_id, order_index])
+}
+
+model SectionActivity {
+  id             String            @id @default(uuid())
+  section_id     String
+  activity_id    String?
+  section        ItinerarySection  @relation(fields: [section_id], references: [id], onDelete: Cascade)
+  activity       ActivityCatalog?  @relation(fields: [activity_id], references: [id])
+  custom_name    String?
+  scheduled_time DateTime?         @db.Time()
+  duration_mins  Int?
+  cost           Decimal           @db.Decimal(10, 2) @default(0)
+  notes          String?
+  is_completed   Boolean           @default(false)
+  created_at     DateTime          @default(now())
+  updated_at     DateTime          @updatedAt
+}
+
+model ExpenseCategory {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  icon      String?
+  color_hex String?
+
+  expenses Expense[]
+}
+
+model Expense {
+  id             String          @id @default(uuid())
+  trip_id        String
+  user_id        String
+  category_id    String
+  trip           Trip            @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [user_id], references: [id])
+  category       ExpenseCategory @relation(fields: [category_id], references: [id])
+  description    String
+  quantity       Int             @default(1)
+  unit_cost      Decimal         @db.Decimal(10, 2)
+  amount         Decimal         @db.Decimal(10, 2)
+  expense_date   DateTime        @db.Date
+  payment_status PaymentStatus   @default(PENDING)
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+
+  @@index([trip_id, category_id])
+}
+
+model PackingItem {
+  id         String          @id @default(uuid())
+  trip_id    String
+  user_id    String
+  trip       Trip            @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [user_id], references: [id])
+  name       String
+  category   PackingCategory
+  is_packed  Boolean         @default(false)
+  created_at DateTime        @default(now())
+  updated_at DateTime        @updatedAt
+
+  @@index([trip_id, category])
+}
+
+model TripNote {
+  id         String    @id @default(uuid())
+  trip_id    String
+  user_id    String
+  stop_id    String?
+  trip       Trip      @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [user_id], references: [id])
+  stop       TripStop? @relation(fields: [stop_id], references: [id])
+  title      String
+  content    String
+  note_date  DateTime  @db.Date
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@index([trip_id, note_date])
+}
+
+model CommunityPost {
+  id         String   @id @default(uuid())
+  user_id    String
+  trip_id    String?
+  user       User     @relation(fields: [user_id], references: [id])
+  trip       Trip?    @relation(fields: [trip_id], references: [id])
+  title      String
+  content    String
+  is_public  Boolean  @default(true)
+  view_count Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  reactions PostReaction[]
+
+  @@index([is_public, created_at])
+}
+
+model PostReaction {
+  id         String        @id @default(uuid())
+  post_id    String
+  user_id    String
+  post       CommunityPost @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  user       User          @relation(fields: [user_id], references: [id])
+  type       ReactionType
+  created_at DateTime      @default(now())
+
+  @@unique([post_id, user_id, type])
+}
+
+model TripShare {
+  id                String          @id @default(uuid())
+  trip_id           String
+  shared_by         String
+  trip              Trip            @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+  user              User            @relation(fields: [shared_by], references: [id])
+  shared_with_email String
+  permission        SharePermission @default(VIEW)
+  shared_at         DateTime        @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id])
+  action     String
+  entity     String
+  entity_id  String
+  metadata   Json?
+  created_at DateTime @default(now())
+}
