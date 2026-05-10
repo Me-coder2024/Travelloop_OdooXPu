@@ -63,8 +63,8 @@ export class TripService {
         place: data.place,
         cover_image_url: data.cover_image_url,
         description: data.description,
-        start_date: data.start_date,
-        end_date: data.end_date,
+        start_date: new Date(data.start_date),
+        end_date: new Date(data.end_date),
         total_budget: data.total_budget,
       },
       include: {
@@ -88,9 +88,14 @@ export class TripService {
     // Verify ownership
     await this.verifyOwnership(tripId, userId);
 
+    // Convert date strings to Date objects if present
+    const updateData: any = { ...data };
+    if (updateData.start_date) updateData.start_date = new Date(updateData.start_date);
+    if (updateData.end_date) updateData.end_date = new Date(updateData.end_date);
+
     return prisma.trip.update({
       where: { id: tripId },
-      data,
+      data: updateData,
       include: {
         stops: { include: { city: true }, orderBy: { order_index: 'asc' } },
         sections: { orderBy: { order_index: 'asc' } },
