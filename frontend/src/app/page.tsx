@@ -10,13 +10,14 @@ import Link from 'next/link';
 import api from '@/lib/api';
 
 export default function LandingPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [cities, setCities] = useState<any[]>([]);
   const [trips, setTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
+    if (authLoading) return; // Wait for auth to resolve first
     const load = async () => {
       try {
         const [citiesRes, tripsRes] = await Promise.all([
@@ -29,7 +30,7 @@ export default function LandingPage() {
       finally { setLoading(false); }
     };
     load();
-  }, [user]);
+  }, [user, authLoading]);
 
   const filtered = cities.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
