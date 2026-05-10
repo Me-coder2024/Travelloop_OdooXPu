@@ -1,3 +1,4 @@
+// JWT utilities - access 15min, refresh 7d
 import jwt from 'jsonwebtoken';
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'fallback-access-secret';
