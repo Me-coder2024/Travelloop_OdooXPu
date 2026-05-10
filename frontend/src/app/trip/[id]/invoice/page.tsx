@@ -23,7 +23,7 @@ export default function InvoicePage() {
   };
 
   const handleDownload = () => {
-    const content = `TRAVELOOP INVOICE\n${'='.repeat(50)}\nTrip: ${trip?.name}\nPlace: ${trip?.place}\nDates: ${trip?.start_date ? new Date(trip.start_date).toLocaleDateString() : ''} - ${trip?.end_date ? new Date(trip.end_date).toLocaleDateString() : ''}\nTotal Budget: $${Number(summary?.total_budget || 0).toFixed(2)}\nTotal Spent: $${Number(summary?.total_spent || 0).toFixed(2)}\n\n${'─'.repeat(50)}\nITEMIZED EXPENSES\n${'─'.repeat(50)}\n${expenses.map((e: any) => `${e.category?.name}\t${e.description}\t${e.quantity}\t$${Number(e.unit_cost).toFixed(2)}\t$${Number(e.amount).toFixed(2)}`).join('\n')}\n${'─'.repeat(50)}\nSUBTOTAL: $${Number(summary?.total_spent || 0).toFixed(2)}`;
+    const content = `TRAVELOOP - TRIP INVOICE\n${'='.repeat(50)}\nTrip: ${trip?.name}\nPlace: ${trip?.place}\nDates: ${trip?.start_date ? new Date(trip.start_date).toLocaleDateString() : ''} - ${trip?.end_date ? new Date(trip.end_date).toLocaleDateString() : ''}\nTotal Budget: $${Number(summary?.total_budget || 0).toFixed(2)}\nTotal Spent: $${Number(summary?.total_spent || 0).toFixed(2)}\n\n${'─'.repeat(50)}\nITEMIZED EXPENSES\n${'─'.repeat(50)}\n${expenses.map((e: any) => `${e.category?.name}\t${e.description}\t${e.quantity}\t$${Number(e.unit_cost).toFixed(2)}\t$${Number(e.amount).toFixed(2)}`).join('\n')}\n${'─'.repeat(50)}\nSUBTOTAL: $${Number(summary?.total_spent || 0).toFixed(2)}`;
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
