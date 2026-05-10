@@ -30,8 +30,8 @@ export class SectionService {
         trip_id: tripId,
         title: data.title,
         description: data.description,
-        date_from: data.date_from,
-        date_to: data.date_to,
+        date_from: new Date(data.date_from),
+        date_to: new Date(data.date_to),
         budget: data.budget,
         order_index: data.order_index,
       },
@@ -51,9 +51,14 @@ export class SectionService {
   }>) {
     await tripService.verifyOwnership(tripId, userId);
 
+    // Convert date strings to Date objects if present
+    const updateData: any = { ...data };
+    if (updateData.date_from) updateData.date_from = new Date(updateData.date_from);
+    if (updateData.date_to) updateData.date_to = new Date(updateData.date_to);
+
     return prisma.itinerarySection.update({
       where: { id: sectionId, trip_id: tripId },
-      data,
+      data: updateData,
       include: {
         activities: { include: { activity: true } },
       },
