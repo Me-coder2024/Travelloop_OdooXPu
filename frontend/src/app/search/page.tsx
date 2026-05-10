@@ -1,17 +1,19 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { Search as SearchIcon, Filter, MapPin } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { MapPin } from 'lucide-react';
+import { SearchBar } from '@/components/ui/SearchBar';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { motion } from 'framer-motion';
 import api from '@/lib/api';
-import Link from 'next/link';
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [cities, setCities] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>('all');
+  const [groupBy, setGroupBy] = useState('All');
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [sortBy, setSortBy] = useState('Default');
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -31,58 +33,91 @@ export default function SearchPage() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Explore Destinations & Activities</h1>
+  // Apply filter
+  const filteredCities = useMemo(() => {
+    if (activeFilter === 'Cities only') return cities;
+    if (activeFilter === 'Activities only') return [];
+    return cities;
+  }, [cities, activeFilter]);
 
-      <div className="flex gap-3 mb-6">
-        <div className="flex-1 relative">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]" />
-          <input type="text" placeholder="Search cities, activities..." value={query} onChange={e => setQuery(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 rounded-lg border border-[var(--color-border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]" />
-        </div>
-        <select value={filter} onChange={e => setFilter(e.target.value)} className="h-10 px-3 rounded-lg border border-[var(--color-border)] text-sm">
-          <option value="all">All</option>
-          <option value="cities">Cities</option>
-          <option value="activities">Activities</option>
-        </select>
+  const filteredActivities = useMemo(() => {
+    if (activeFilter === 'Activities only') return activities;
+    if (activeFilter === 'Cities only') return [];
+    return activities;
+  }, [activities, activeFilter]);
+
+  // Apply sort
+  const sortedCities = useMemo(() => {
+    const arr = [...filteredCities];
+    if (sortBy === 'Name A-Z') arr.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === 'Name Z-A') arr.sort((a, b) => b.name.localeCompare(a.name));
+    if (sortBy === 'Cost ↑') arr.sort((a, b) => a.cost_index - b.cost_index);
+    if (sortBy === 'Cost ↓') arr.sort((a, b) => b.cost_index - a.cost_index);
+    return arr;
+  }, [filteredCities, sortBy]);
+
+  const sortedActivities = useMemo(() => {
+    const arr = [...filteredActivities];
+    if (sortBy === 'Name A-Z') arr.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === 'Name Z-A') arr.sort((a, b) => b.name.localeCompare(a.name));
+    if (sortBy === 'Cost ↑') arr.sort((a, b) => Number(a.avg_cost) - Number(b.avg_cost));
+    if (sortBy === 'Cost ↓') arr.sort((a, b) => Number(b.avg_cost) - Number(a.avg_cost));
+    return arr;
+  }, [filteredActivities, sortBy]);
+
+  return (
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '24px' }}>
+      <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '20px' }}>Explore Destinations & Activities</h1>
+
+      {/* Search bar */}
+      <div style={{ marginBottom: '24px' }}>
+        <SearchBar
+          value={query} onChange={setQuery}
+          placeholder="Search cities, activities..."
+          groupByOptions={['All', 'Region', 'Category']}
+          groupBy={groupBy} onGroupByChange={setGroupBy}
+          filterOptions={['All', 'Cities only', 'Activities only']}
+          activeFilter={activeFilter} onFilterChange={setActiveFilter}
+          sortOptions={['Default', 'Name A-Z', 'Name Z-A', 'Cost ↑', 'Cost ↓']}
+          sortBy={sortBy} onSortChange={setSortBy}
+        />
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-16 w-full" />)}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-16 w-full" />)}</div>
       ) : (
-        <div className="space-y-8">
-          {(filter === 'all' || filter === 'cities') && cities.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          {sortedCities.length > 0 && (
             <div>
-              <h2 className="text-lg font-semibold mb-3">Cities ({cities.length})</h2>
-              <div className="space-y-2">
-                {cities.map((city, i) => (
-                  <motion.div key={city.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
-                    className="flex items-center gap-4 bg-white rounded-lg border border-[var(--color-border)] p-4 hover:shadow-sm transition-shadow">
-                    <img src={city.image_url || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=100'} alt={city.name} className="h-12 w-12 rounded-lg object-cover" />
-                    <div className="flex-1">
-                      <h3 className="font-medium">{city.name}</h3>
-                      <p className="text-sm text-[var(--color-text-secondary)] flex items-center gap-1"><MapPin className="h-3 w-3" />{city.country} · {city.region}</p>
+              <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A', marginBottom: '12px' }}>Cities ({sortedCities.length})</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {sortedCities.map((city, i) => (
+                  <motion.div key={city.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '14px', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '14px 16px' }}>
+                    <img src={city.image_url || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=100'} alt={city.name} style={{ height: '48px', width: '48px', borderRadius: '8px', objectFit: 'cover' }} />
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A' }}>{city.name}</h3>
+                      <p style={{ fontSize: '13px', color: '#475569', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin style={{ width: '12px', height: '12px' }} />{city.country} · {city.region}</p>
                     </div>
-                    <span className="text-xs text-[var(--color-text-muted)]">Cost index: {city.cost_index}</span>
+                    <span style={{ fontSize: '12px', color: '#94A3B8' }}>Cost index: {city.cost_index}</span>
                   </motion.div>
                 ))}
               </div>
             </div>
           )}
 
-          {(filter === 'all' || filter === 'activities') && activities.length > 0 && (
+          {sortedActivities.length > 0 && (
             <div>
-              <h2 className="text-lg font-semibold mb-3">Activities ({activities.length})</h2>
-              <div className="space-y-2">
-                {activities.slice(0, 20).map((act, i) => (
-                  <motion.div key={act.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
-                    className="flex items-center gap-4 bg-white rounded-lg border border-[var(--color-border)] p-4">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-sm">{act.name}</h3>
-                      <p className="text-xs text-[var(--color-text-secondary)]">{act.city?.name || 'Various'} · {act.category}</p>
+              <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A', marginBottom: '12px' }}>Activities ({sortedActivities.length})</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {sortedActivities.slice(0, 20).map((act, i) => (
+                  <motion.div key={act.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '14px', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '14px 16px' }}>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A' }}>{act.name}</h3>
+                      <p style={{ fontSize: '12px', color: '#475569' }}>{act.city?.name || 'Various'} · {act.category}</p>
                     </div>
-                    <span className="text-sm font-medium">${Number(act.avg_cost).toFixed(0)}</span>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A' }}>${Number(act.avg_cost).toFixed(0)}</span>
                   </motion.div>
                 ))}
               </div>
