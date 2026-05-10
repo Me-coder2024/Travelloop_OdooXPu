@@ -1,4 +1,5 @@
 'use client';
+// Hook for itinerary sections management
 import { useState, useCallback } from 'react';
 import api from '@/lib/api';
 
