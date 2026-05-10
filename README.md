@@ -6,9 +6,9 @@ A full-stack travel planning application built with Next.js 14, Express, Postgre
 
 | Name | Role | Screens |
 |------|------|---------|
-| **Krish Kumar Gupta** | Backend & Database | DB Schema, API, Seed Data |
-| **Aksh Narwani** | Frontend Core | Screens 1-6, 8 |
-| **Dixit Malviya** | Frontend Advanced | Screens 7, 9-14 |
+| **Kavya PATEL** | Backend & Database | DB Schema, API, Seed Data |
+| **Shreya** | Frontend Core | Screens 1-6, 7-14 |
+
 
 ## Tech Stack
 
@@ -72,9 +72,9 @@ npm run dev
 
 | Username | Password | Role |
 |----------|----------|------|
-| krish_admin | Password1 | ADMIN |
-| aksh_traveler | Password1 | USER |
-| dixit_explorer | Password1 | USER |
+| KAVYA_admin | Password1 | ADMIN |
+|shreya_traveller| Password1 | USER |
+
 
 ## Project Structure
 
