@@ -33,7 +33,7 @@ export default function NotesPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-between mb-6">
-          <div><h1 className="text-3xl font-bold">Trip Notes</h1><p className="text-[var(--color-text-secondary)]">Journal your travel experiences</p></div>
+          <div><h1 className="text-3xl font-bold tracking-tight">Trip Notes</h1><p className="text-[var(--color-text-secondary)]">Journal your travel experiences</p></div>
           <Button onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-1" />Add Note</Button>
         </div>
 
