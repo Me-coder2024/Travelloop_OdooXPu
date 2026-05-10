@@ -20,7 +20,7 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const user = await adminService.updateUser(req.params.id, req.body);
+    const user = await adminService.updateUser(req.params.id as string, req.body);
     sendSuccess(res, user, 200, 'User updated');
   } catch (err: any) { sendError(res, err.message, 500); }
 };

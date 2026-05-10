@@ -21,7 +21,7 @@ export const createPost = async (req: Request, res: Response) => {
 
 export const reactToPost = async (req: Request, res: Response) => {
   try {
-    const result = await communityService.toggleReaction(req.params.id, req.user!.userId, req.body.type);
+    const result = await communityService.toggleReaction(req.params.id as string, req.user!.userId, req.body.type);
     sendSuccess(res, result);
   } catch (err: any) { sendError(res, err.message, 500); }
 };
