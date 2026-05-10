@@ -47,7 +47,7 @@ export default function LoginPage() {
             <Globe className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Welcome back</h1>
-          <p className="text-[var(--color-text-secondary)] mt-1">Sign in to your Traveloop account</p>
+          <p className="text-[var(--color-text-secondary)] mt-1">Sign in to continue your journey</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-[var(--color-border)] p-8">
