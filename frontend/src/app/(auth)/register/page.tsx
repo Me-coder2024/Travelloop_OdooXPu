@@ -5,11 +5,11 @@ import { registerSchema, RegisterInput } from '@/lib/validators';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Globe, User, Mail, Lock, Phone, MapPin } from 'lucide-react';
+import { Textarea } from '@/components/ui/Textarea';
+import { Globe, User, Mail, Lock, Phone, MapPin, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 
 export default function RegisterPage() {
   const { register: registerUser } = useAuth();
@@ -35,46 +35,76 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 px-4 py-12">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="w-full max-w-lg">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-[var(--color-primary)] mb-4">
-            <Globe className="h-7 w-7 text-white" />
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', padding: '24px' }}>
+      <div style={{ width: '100%', maxWidth: '460px' }}>
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '20px', fontWeight: 700, color: '#0F172A' }}>
+            <Globe style={{ width: '22px', height: '22px', color: '#1D4ED8' }} />
+            Traveloop
           </div>
-          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Create your account</h1>
-          <p className="text-[var(--color-text-secondary)] mt-1">Join Traveloop and start planning</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-[var(--color-border)] p-8">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input id="first_name" label="First Name" placeholder="First name" icon={<User className="h-4 w-4" />} error={errors.first_name?.message} {...register('first_name')} />
+        {/* Card */}
+        <div style={{ background: '#FFFFFF', borderRadius: '12px', padding: '32px 28px', border: '1px solid #E2E8F0' }}>
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', margin: '0 0 4px 0' }}>
+              Create your account
+            </h1>
+            <p style={{ fontSize: '14px', color: '#475569', margin: 0 }}>
+              Start planning your next adventure
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* Names */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <Input id="first_name" label="First Name" placeholder="First name" icon={<User style={{ width: '16px', height: '16px' }} />} error={errors.first_name?.message} {...register('first_name')} />
               <Input id="last_name" label="Last Name" placeholder="Last name" error={errors.last_name?.message} {...register('last_name')} />
             </div>
-            <Input id="username" label="Username" placeholder="Choose a username" icon={<User className="h-4 w-4" />} error={errors.username?.message} {...register('username')} />
-            <Input id="email" label="Email" type="email" placeholder="you@example.com" icon={<Mail className="h-4 w-4" />} error={errors.email?.message} {...register('email')} />
-            <Input id="password" label="Password" type="password" placeholder="Min 8 chars, 1 uppercase, 1 digit" icon={<Lock className="h-4 w-4" />} error={errors.password?.message} {...register('password')} />
-            <Input id="phone" label="Phone (optional)" placeholder="+91..." icon={<Phone className="h-4 w-4" />} error={errors.phone?.message} {...register('phone')} />
-            <div className="grid grid-cols-2 gap-4">
-              <Input id="city" label="City" placeholder="Your city" icon={<MapPin className="h-4 w-4" />} error={errors.city?.message} {...register('city')} />
+
+            <Input id="username" label="Username" placeholder="Choose a unique username" icon={<User style={{ width: '16px', height: '16px' }} />} error={errors.username?.message} helperText="This will be your public profile identifier" {...register('username')} />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <Input id="email" label="Email" type="email" placeholder="you@example.com" icon={<Mail style={{ width: '16px', height: '16px' }} />} error={errors.email?.message} {...register('email')} />
+              <Input id="phone" label="Phone" placeholder="+91..." icon={<Phone style={{ width: '16px', height: '16px' }} />} error={errors.phone?.message} {...register('phone')} />
+            </div>
+
+            <Input id="password" label="Password" type="password" placeholder="Min 8 chars, 1 uppercase, 1 digit" icon={<Lock style={{ width: '16px', height: '16px' }} />} error={errors.password?.message} {...register('password')} />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <Input id="city" label="City" placeholder="Your city" icon={<MapPin style={{ width: '16px', height: '16px' }} />} error={errors.city?.message} {...register('city')} />
               <Input id="country" label="Country" placeholder="Your country" error={errors.country?.message} {...register('country')} />
             </div>
-            <Input id="avatar_url" label="Profile Photo URL (optional)" placeholder="https://..." error={errors.avatar_url?.message} {...register('avatar_url')} />
-            <div>
-              <label htmlFor="additional_info" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">Additional Info</label>
-              <textarea id="additional_info" rows={3} className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]" placeholder="Tell us about yourself..." {...register('additional_info')} />
-            </div>
 
-            {serverError && <p className="text-sm text-[var(--color-danger)] bg-red-50 px-3 py-2 rounded-lg">{serverError}</p>}
+            <Input id="avatar_url" label="Profile Photo URL" placeholder="https://..." helperText="Optional — paste a link to your profile photo" error={errors.avatar_url?.message} {...register('avatar_url')} />
 
-            <Button type="submit" className="w-full" size="lg" loading={loading}>Register</Button>
+            <Textarea id="additional_info" label="About You" rows={2} placeholder="Tell us about yourself, your travel interests..." helperText="Optional — helps us personalize your experience" {...register('additional_info')} />
+
+            {serverError && (
+              <div style={{ background: '#FEF2F2', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: '#991B1B', fontWeight: 500 }}>
+                {serverError}
+              </div>
+            )}
+
+            <Button type="submit" variant="primary" size="lg" loading={loading} style={{ width: '100%', marginTop: '4px' }}>
+              Create Account
+              {!loading && <ArrowRight style={{ width: '16px', height: '16px', marginLeft: '6px' }} />}
+            </Button>
           </form>
-
-          <p className="text-center text-sm text-[var(--color-text-secondary)] mt-6">
-            Already have an account? <Link href="/login" className="text-[var(--color-accent)] font-medium hover:underline">Sign in</Link>
-          </p>
         </div>
-      </motion.div>
+
+        {/* Footer */}
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <span style={{ fontSize: '14px', color: '#475569' }}>
+            Already have an account?{' '}
+            <Link href="/login" style={{ color: '#1D4ED8', fontWeight: 600, textDecoration: 'none' }}>
+              Sign in
+            </Link>
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
