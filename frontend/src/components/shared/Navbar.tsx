@@ -50,7 +50,7 @@ export function Navbar() {
                   {user.avatar_url ? <img src={user.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" /> : <User className="h-4 w-4" />}
                   {user.first_name}
                 </Link>
-                <button onClick={logout} className="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-red-50 transition-colors" aria-label="Logout">
+                <button onClick={logout} className="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-red-50 transition-colors" aria-label="Sign out of your account">
                   <LogOut className="h-4 w-4" />
                 </button>
               </>
