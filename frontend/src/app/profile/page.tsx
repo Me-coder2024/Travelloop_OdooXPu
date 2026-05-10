@@ -27,66 +27,83 @@ export default function ProfilePage() {
     catch (e) { console.error(e); } finally { setSaving(false); }
   };
 
-  if (!user) return <div className="flex justify-center py-20"><Skeleton className="h-40 w-96" /></div>;
+  if (!user) return <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 24px' }}><Skeleton className="h-40 w-full" style={{ maxWidth: '400px' }} /></div>;
 
   const planned = trips.filter((t: any) => t.status === 'PLANNED');
   const completed = trips.filter((t: any) => t.status === 'COMPLETED');
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+    <div style={{ maxWidth: '720px', margin: '0 auto', padding: '24px 16px' }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+
         {/* Profile Header */}
-        <div className="bg-white rounded-2xl border border-[var(--color-border)] p-8 mb-8">
-          <div className="flex items-start gap-6">
-            <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
-              {user.avatar_url ? <img src={user.avatar_url} alt="" className="h-full w-full object-cover" /> : <User className="h-10 w-10 text-[var(--color-text-muted)]" />}
+        <div style={{ background: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '20px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            {/* Avatar */}
+            <div style={{ width: '72px', height: '72px', borderRadius: '999px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+              {user.avatar_url ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <User style={{ width: '32px', height: '32px', color: '#94A3B8' }} />}
             </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
+
+            {/* Info */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
                 <div>
-                  <h1 className="text-2xl font-bold">{user.first_name} {user.last_name}</h1>
-                  <p className="text-[var(--color-text-secondary)]">@{user.username} · {user.email}</p>
+                  <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A' }}>{user.first_name} {user.last_name}</h1>
+                  <p style={{ fontSize: '13px', color: '#475569', wordBreak: 'break-all' }}>@{user.username} · {user.email}</p>
                 </div>
-                <Button variant="secondary" size="sm" onClick={() => setEditing(!editing)}><Edit3 className="h-3.5 w-3.5 mr-1" />{editing ? 'Cancel' : 'Edit'}</Button>
+                <Button variant="secondary" size="sm" onClick={() => setEditing(!editing)}>
+                  <Edit3 style={{ width: '14px', height: '14px', marginRight: '4px' }} />{editing ? 'Cancel' : 'Edit'}
+                </Button>
               </div>
-              {!editing && user.city && <p className="text-sm text-[var(--color-text-muted)] mt-2 flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{user.city}, {user.country}</p>}
+              {!editing && user.city && (
+                <p style={{ fontSize: '13px', color: '#94A3B8', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <MapPin style={{ width: '13px', height: '13px' }} />{user.city}, {user.country}
+                </p>
+              )}
             </div>
           </div>
 
+          {/* Edit form */}
           {editing && (
-            <div className="mt-6 space-y-4 border-t border-[var(--color-border)] pt-6">
-              <div className="grid grid-cols-2 gap-4">
+            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
                 <Input label="First Name" value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} />
                 <Input label="Last Name" value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
                 <Input label="City" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
                 <Input label="Country" value={form.country} onChange={e => setForm({ ...form, country: e.target.value })} />
               </div>
               <Input label="Phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
               <Input label="Avatar URL" value={form.avatar_url} onChange={e => setForm({ ...form, avatar_url: e.target.value })} />
-              <Button onClick={handleSave} loading={saving}><Save className="h-4 w-4 mr-1" />Save Changes</Button>
+              <Button onClick={handleSave} loading={saving}><Save style={{ width: '14px', height: '14px', marginRight: '6px' }} />Save Changes</Button>
             </div>
           )}
         </div>
 
-        {/* Trips */}
+        {/* Trips sections */}
         {[{ title: 'Preplanned Trips', data: planned }, { title: 'Previous Trips', data: completed }].map(section => (
-          <div key={section.title} className="mb-8">
-            <h2 className="text-xl font-bold mb-4">{section.title}</h2>
-            {loading ? <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{[1,2].map(i => <Skeleton key={i} className="h-28" />)}</div>
-            : section.data.length === 0 ? <p className="text-sm text-[var(--color-text-muted)]">No trips</p>
-            : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div key={section.title} style={{ marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0F172A', marginBottom: '12px' }}>{section.title}</h2>
+            {loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>{[1,2].map(i => <Skeleton key={i} className="h-28" />)}</div>
+            ) : section.data.length === 0 ? (
+              <p style={{ fontSize: '13px', color: '#94A3B8' }}>No trips</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {section.data.map((trip: any) => (
-                  <div key={trip.id} className="bg-white rounded-xl border border-[var(--color-border)] p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold">{trip.name}</h3>
+                  <div key={trip.id} style={{ background: '#FFFFFF', borderRadius: '10px', border: '1px solid #E2E8F0', padding: '14px 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '6px', gap: '8px', flexWrap: 'wrap' }}>
+                      <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>{trip.name}</h3>
                       <TripStatusBadge status={trip.status} />
                     </div>
-                    <p className="text-sm text-[var(--color-text-secondary)] flex items-center gap-1"><MapPin className="h-3 w-3" />{trip.place}</p>
-                    <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1 mt-1"><Calendar className="h-3 w-3" />{new Date(trip.start_date).toLocaleDateString()}</p>
-                    <Link href={`/trip/${trip.id}`}><Button size="sm" variant="secondary" className="mt-3">View</Button></Link>
+                    <p style={{ fontSize: '13px', color: '#475569', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                      <MapPin style={{ width: '13px', height: '13px' }} />{trip.place}
+                    </p>
+                    <p style={{ fontSize: '12px', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Calendar style={{ width: '12px', height: '12px' }} />{new Date(trip.start_date).toLocaleDateString()}
+                    </p>
+                    <Link href={`/trip/${trip.id}`}><Button size="sm" variant="ghost" style={{ marginTop: '10px' }}>View</Button></Link>
                   </div>
                 ))}
               </div>
