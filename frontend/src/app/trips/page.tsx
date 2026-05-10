@@ -28,7 +28,7 @@ export default function TripsPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">My Trips</h1>
+        <h1 className="text-3xl font-bold">My Trips</h1><p className="text-sm text-[var(--color-text-secondary)]">Manage all your travel plans</p>
         <Link href="/trip/new"><Button><Plus className="h-4 w-4 mr-1" />New Trip</Button></Link>
       </div>
 
