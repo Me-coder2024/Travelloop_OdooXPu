@@ -1,4 +1,5 @@
 'use client';
+// Hook for expense CRUD and budget summary
 import { useState, useCallback } from 'react';
 import api from '@/lib/api';
 
