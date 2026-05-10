@@ -5,13 +5,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/Button';
-import { Search, Heart, Bookmark, MessageSquare, User } from 'lucide-react';
+import { SearchBar } from '@/components/ui/SearchBar';
+import { Heart, Bookmark, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function CommunityPage() {
   const { posts, loading, fetchPosts, toggleReaction, createPost } = useCommunity();
   const { user } = useAuth();
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('Newest');
+  const [activeFilter, setActiveFilter] = useState('All');
   const [selected, setSelected] = useState<any>(null);
   const [showNew, setShowNew] = useState(false);
   const [newPost, setNewPost] = useState({ title: '', content: '' });
@@ -26,16 +29,23 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Community</h1>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>Community</h1>
         {user && <Button onClick={() => setShowNew(true)}>New Post</Button>}
       </div>
 
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]" />
-        <input type="text" placeholder="Search posts..." value={search} onChange={e => setSearch(e.target.value)}
-          className="w-full h-10 pl-10 pr-4 rounded-lg border border-[var(--color-border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]" />
+      <div style={{ marginBottom: '20px' }}>
+        <SearchBar
+          value={search} onChange={setSearch}
+          placeholder="Search posts..."
+          groupByOptions={['All', 'Author', 'Date']}
+          groupBy="All" onGroupByChange={() => {}}
+          filterOptions={['All', 'My Posts', 'Most Liked']}
+          activeFilter={activeFilter} onFilterChange={setActiveFilter}
+          sortOptions={['Newest', 'Oldest', 'Most Liked']}
+          sortBy={sortBy} onSortChange={setSortBy}
+        />
       </div>
 
       {showNew && (
