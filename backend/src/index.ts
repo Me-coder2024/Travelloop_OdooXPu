@@ -59,3 +59,5 @@ app.listen(PORT, () => {
 export default app;
 
 process.on('SIGTERM', () => { console.log('SIGTERM received'); process.exit(0); });
+
+process.on('SIGINT', () => { console.log('SIGINT received'); process.exit(0); });
