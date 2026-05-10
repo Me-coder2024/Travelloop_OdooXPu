@@ -7,7 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Traveloop — Personalized Travel Planning",
+  icons: { icon: "/favicon.ico" }, title: "Traveloop — Personalized Travel Planning",
   description: "Plan your perfect trip with Traveloop. Create itineraries, track expenses, and share your adventures.",
 };
 
