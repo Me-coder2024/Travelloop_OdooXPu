@@ -64,7 +64,7 @@ export default function CommunityPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">{post.user.first_name} {post.user.last_name}</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">{new Date(post.created_at).toLocaleDateString()}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">{new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
                 </div>
               </div>
               <h3 className="font-semibold mb-1">{post.title}</h3>
@@ -89,7 +89,7 @@ export default function CommunityPage() {
             <div className="bg-white rounded-xl border border-[var(--color-border)] p-6 sticky top-24">
               <h3 className="font-bold text-lg mb-2">{selected.title}</h3>
               <p className="text-sm text-[var(--color-text-secondary)] whitespace-pre-wrap">{selected.content}</p>
-              <p className="text-xs text-[var(--color-text-muted)] mt-4">By {selected.user.first_name} {selected.user.last_name} · {new Date(selected.created_at).toLocaleDateString()}</p>
+              <p className="text-xs text-[var(--color-text-muted)] mt-4">By {selected.user.first_name} {selected.user.last_name} · {new Date(selected.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
             </div>
           ) : (
             <div className="bg-gray-50 rounded-xl p-6 text-center text-sm text-[var(--color-text-muted)]">Select a post to see details</div>
