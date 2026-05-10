@@ -6,17 +6,29 @@ interface BadgeProps {
   className?: string;
 }
 
-const variantStyles: Record<string, string> = {
-  default: 'bg-gray-100 text-gray-700',
-  success: 'bg-emerald-50 text-emerald-700',
-  warning: 'bg-amber-50 text-amber-700',
-  danger: 'bg-red-50 text-red-700',
-  info: 'bg-blue-50 text-blue-700',
+const variantMap: Record<string, React.CSSProperties> = {
+  default: { background: '#F1F5F9', color: '#334155', border: '1px solid #E2E8F0' },
+  success: { background: '#ECFDF5', color: '#065F46', border: '1px solid #A7F3D0' },
+  warning: { background: '#FFFBEB', color: '#92400E', border: '1px solid #FDE68A' },
+  danger:  { background: '#FEF2F2', color: '#991B1B', border: '1px solid #FECACA' },
+  info:    { background: '#EFF6FF', color: '#1E3A5F', border: '1px solid #BFDBFE' },
 };
 
 export function Badge({ children, variant = 'default', className = '' }: BadgeProps) {
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variantStyles[variant]} ${className}`}>
+    <span
+      className={className}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '2px 10px',
+        borderRadius: '999px',
+        fontSize: '12px',
+        fontWeight: 600,
+        whiteSpace: 'nowrap',
+        ...variantMap[variant],
+      }}
+    >
       {children}
     </span>
   );
