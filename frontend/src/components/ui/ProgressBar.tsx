@@ -1,4 +1,5 @@
 'use client';
+// Animated progress bar built on Radix UI Progress
 import * as RadixProgress from '@radix-ui/react-progress';
 
 interface ProgressBarProps {
