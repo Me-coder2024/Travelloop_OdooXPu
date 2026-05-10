@@ -1,3 +1,4 @@
+// Standardized API response helpers
 import { Response } from 'express';
 
 interface FieldError {
