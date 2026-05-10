@@ -1,4 +1,5 @@
 'use client';
+// Framer Motion page transition wrapper
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 
