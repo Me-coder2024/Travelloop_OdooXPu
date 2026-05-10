@@ -28,7 +28,7 @@ export default function CommunityPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Community</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Community</h1>
         {user && <Button onClick={() => setShowNew(true)}>New Post</Button>}
       </div>
 
