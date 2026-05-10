@@ -1,3 +1,4 @@
+// Global error handler - catches unhandled errors
 import { Request, Response, NextFunction } from 'express';
 
 export const errorHandler = (
