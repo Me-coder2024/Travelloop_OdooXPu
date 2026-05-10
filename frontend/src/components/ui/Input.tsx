@@ -1,5 +1,5 @@
 'use client';
-import { forwardRef, InputHTMLAttributes } from 'react';
+import { forwardRef /* accessible input with icon and error state */, InputHTMLAttributes } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -7,7 +7,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;
 }
 
-const Input = forwardRef<HTMLInputElement, InputProps>(
+const Input = forwardRef /* accessible input with icon and error state */<HTMLInputElement, InputProps>(
   ({ className = '', label, error, icon, id, ...props }, ref) => {
     return (
       <div className="w-full">
