@@ -1,4 +1,5 @@
 'use client';
+// Hook for packing checklist with progress tracking
 import { useState, useCallback } from 'react';
 import api from '@/lib/api';
 
